@@ -12,13 +12,16 @@
 
 # testing
 /coverage
+.github
+.vscode/extensions.json
 
 # next.js
 /.next/
 /out/
-
+.REFRACTORING-SUMMARY.md
 # production
 /build
+.CHANGES.md
 
 # misc
 .DS_Store
