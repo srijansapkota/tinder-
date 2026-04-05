@@ -2,7 +2,7 @@
 import { createClient } from "@/lib/supabase/client";
 import { User } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
 
 interface AuthContextType {
   user: User | null;
@@ -14,8 +14,9 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
-  const supabase = createClient();
+  const [loading, setLoading] = useState<boolean>(true);
+  // Memoize the client so it is not recreated on every render
+  const supabase = useMemo(() => createClient(), []);
   const router = useRouter();
 
   useEffect(() => {
@@ -26,10 +27,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } = await supabase.auth.getSession();
 
         setUser(session?.user ?? null);
-        console.log(session?.user);
+
         const {
           data: { subscription },
-        } = supabase.auth.onAuthStateChange(async (event, session) => {
+        } = supabase.auth.onAuthStateChange(async (_event, session) => {
           setUser(session?.user ?? null);
         });
 
@@ -41,8 +42,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     }
 
-    checkUser();
-  }, []);
+    // Wire the subscription cleanup back to the useEffect return
+    const cleanupPromise = checkUser();
+    return () => {
+      cleanupPromise.then((cleanup) => cleanup?.());
+    };
+  }, [supabase]);
 
   async function signOut() {
     try {

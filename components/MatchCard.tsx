@@ -15,7 +15,7 @@ export default function MatchCard({ user }: { user: UserProfile }) {
             }
             alt={user.full_name || 'User avatar'}
             fill
-            className={`object-cover transition-opacity duration-300`}
+            className="object-cover transition-opacity duration-300"
             priority
           />
 

@@ -3,13 +3,17 @@
 import { StreamChat } from 'stream-chat';
 import { createClient } from '../supabase/server';
 
-// Initialize server client once
-const getServerClient = () => {
-  return StreamChat.getInstance(
-    process.env.NEXT_PUBLIC_STREAM_API_KEY!,
-    process.env.STREAM_API_SECRET!
-  );
-};
+// Module-level singleton — created once, reused across all server action calls
+let _serverClient: StreamChat | null = null;
+function getServerClient(): StreamChat {
+  if (!_serverClient) {
+    _serverClient = new StreamChat(
+      process.env.NEXT_PUBLIC_STREAM_API_KEY!,
+      process.env.STREAM_API_SECRET!
+    );
+  }
+  return _serverClient;
+}
 
 export async function getStreamUserToken() {
   const supabase = await createClient();
@@ -167,36 +171,11 @@ export async function createVideoCall(otherUserId: string) {
   return { callId, callType: 'default' };
 }
 
+
+/**
+ * Returns a Stream token suitable for initialising the Video SDK on the client.
+ * Reuses getStreamUserToken so there is no duplicated logic.
+ */
 export async function getStreamVideoToken() {
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return { success: false, error: 'User not authenticated' };
-  }
-
-  const { data: userData, error: userError } = await supabase
-    .from('users')
-    .select('full_name, avatar_url')
-    .eq('id', user.id)
-    .single();
-
-  if (userError) {
-    console.error('Error fetching user data:', userError);
-    throw new Error('Failed to fetch user data');
-  }
-
-  const serverClient = getServerClient();
-
-  const token = serverClient.createToken(user.id);
-
-  return {
-    token,
-    userId: user.id,
-    userName: userData.full_name,
-    userImage: userData.avatar_url || undefined,
-  };
+  return getStreamUserToken();
 }

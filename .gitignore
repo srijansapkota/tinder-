@@ -14,6 +14,7 @@
 /coverage
 .github
 .vscode/extensions.json
+.projectbrief.md
 
 
 

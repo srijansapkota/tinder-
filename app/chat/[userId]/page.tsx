@@ -3,6 +3,7 @@
 import { UserProfile } from '@/lib/types';
 import ChatHeader from '@/components/ChatHeader';
 import StreamChatInterface from '@/components/StreamChatInterface';
+import StreamVideoInterface from '@/components/StreamVideoInterface';
 import { useAuth } from '@/contexts/auth-context';
 import { getUserMatches } from '@/lib/actions/matches';
 import { useParams, useRouter } from 'next/navigation';
@@ -13,6 +14,7 @@ export default function ChatConversationPage() {
   const router = useRouter();
   const [otheruser, setOtherUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isVideoActive, setIsVideoActive] = useState(false);
   const userId = params.userId as string;
 
   const { user } = useAuth();
@@ -63,12 +65,23 @@ export default function ChatConversationPage() {
   return (
     <div className="h-screen bg-gradient-to-br from-pink-50 to-red-50 dark:from-gray-900 dark:to-gray-800">
       <div className="max-w-4xl mx-auto h-full flex flex-col">
-        <ChatHeader user={otheruser} onVideoCall={() => {}} />
+        <ChatHeader
+          user={otheruser}
+          onVideoCall={() => setIsVideoActive(true)}
+        />
 
         <div className="flex-1 min-h-0">
           <StreamChatInterface otherUser={otheruser} />
         </div>
       </div>
+
+      {/* Full-screen video call overlay */}
+      {isVideoActive && otheruser && (
+        <StreamVideoInterface
+          otherUserId={otheruser.id}
+          onClose={() => setIsVideoActive(false)}
+        />
+      )}
     </div>
   );
 }
