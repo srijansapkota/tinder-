@@ -22,7 +22,9 @@ export default function StreamVideoInterface({
   onClose,
 }: StreamVideoInterfaceProps) {
   const [client, setClient] = useState<StreamVideoClient | null>(null);
-  const [call, setCall] = useState<ReturnType<StreamVideoClient['call']> | null>(null);
+  const [call, setCall] = useState<ReturnType<
+    StreamVideoClient['call']
+  > | null>(null);
   const [loading, setLoading] = useState(true);
   const hasLeft = useRef(false);
   const [error, setError] = useState<string | null>(null);
@@ -108,7 +110,6 @@ export default function StreamVideoInterface({
         }
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [otherUserId]);
 
   if (loading) {

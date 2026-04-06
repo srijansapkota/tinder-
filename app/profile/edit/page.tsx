@@ -38,7 +38,7 @@ export default function EditProfilePage() {
             avatar_url: profileData.avatar_url || '',
           });
         }
-      } catch (err) {
+      } catch {
         setError('Failed to load profile');
       } finally {
         setLoading(false);
@@ -61,7 +61,7 @@ export default function EditProfilePage() {
       } else {
         setError(result.error || 'Failed to update profile.');
       }
-    } catch (err) {
+    } catch {
       setError('Failed to update profile.');
     } finally {
       setSaving(false);

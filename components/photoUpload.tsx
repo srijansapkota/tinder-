@@ -37,7 +37,7 @@ export default function PhotoUpload({
       } else {
         setError(result.error ?? 'Failed to upload photo.');
       }
-    } catch (err) {
+    } catch {
       setError('Failed to upload photo. Please try again.');
     } finally {
       setUploading(false);
