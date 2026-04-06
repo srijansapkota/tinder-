@@ -14,14 +14,13 @@
 /coverage
 .github
 .vscode/extensions.json
-.projectbrief.md
-
+projectbrief.md
+.continue
 
 
 # next.js
 /.next/
 /out/
-.REFRACTORING-SUMMARY.md
 # production
 /build
 .CHANGES.md
