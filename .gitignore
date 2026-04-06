@@ -12,10 +12,12 @@
 
 # testing
 /coverage
-.github
+.github/
 .vscode/extensions.json
 projectbrief.md
-.continue
+.continue/
+REFACTORING-SUMMARY.md
+CHANGES.md
 
 
 # next.js
