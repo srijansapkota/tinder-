@@ -5,9 +5,16 @@ import {
   getCurrentUserProfile,
   updateUserProfile,
 } from '@/lib/actions/profile';
+import { UserPreferences } from '@/lib/types';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+
+const defaultPreferences: UserPreferences = {
+  age_range: { min: 18, max: 50 },
+  distance: 25,
+  gender_preference: [],
+};
 
 export default function EditProfilePage() {
   const [loading, setLoading] = useState(true);
@@ -22,6 +29,7 @@ export default function EditProfilePage() {
     gender: 'male' as 'male' | 'female' | 'other',
     birthdate: '',
     avatar_url: '',
+    preferences: defaultPreferences,
   });
 
   useEffect(() => {
@@ -36,6 +44,7 @@ export default function EditProfilePage() {
             gender: profileData.gender || 'male',
             birthdate: profileData.birthdate || '',
             avatar_url: profileData.avatar_url || '',
+            preferences: profileData.preferences || defaultPreferences,
           });
         }
       } catch {
@@ -50,6 +59,18 @@ export default function EditProfilePage() {
 
   async function handleFormSubmit(e: React.FormEvent) {
     e.preventDefault();
+
+    if (
+      formData.preferences.age_range.min > formData.preferences.age_range.max
+    ) {
+      setError('Minimum preferred age cannot be greater than maximum age.');
+      return;
+    }
+
+    if (formData.preferences.gender_preference.length === 0) {
+      setError('Select at least one gender preference.');
+      return;
+    }
 
     setSaving(true);
     setError(null);
@@ -78,6 +99,56 @@ export default function EditProfilePage() {
       ...prev,
       [name]: value,
     }));
+  }
+
+  function updateAgeRange(type: 'min' | 'max', value: string) {
+    const parsed = Number(value);
+
+    if (Number.isNaN(parsed)) {
+      return;
+    }
+
+    setFormData((prev) => ({
+      ...prev,
+      preferences: {
+        ...prev.preferences,
+        age_range: {
+          ...prev.preferences.age_range,
+          [type]: parsed,
+        },
+      },
+    }));
+  }
+
+  function updateDistance(value: string) {
+    const parsed = Number(value);
+
+    if (Number.isNaN(parsed)) {
+      return;
+    }
+
+    setFormData((prev) => ({
+      ...prev,
+      preferences: {
+        ...prev.preferences,
+        distance: parsed,
+      },
+    }));
+  }
+
+  function toggleGenderPreference(gender: 'male' | 'female' | 'other') {
+    setFormData((prev) => {
+      const exists = prev.preferences.gender_preference.includes(gender);
+      return {
+        ...prev,
+        preferences: {
+          ...prev.preferences,
+          gender_preference: exists
+            ? prev.preferences.gender_preference.filter((g) => g !== gender)
+            : [...prev.preferences.gender_preference, gender],
+        },
+      };
+    });
   }
 
   if (loading) {
@@ -249,6 +320,96 @@ export default function EditProfilePage() {
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                 {formData.bio.length}/500 characters
               </p>
+            </div>
+
+            <div className="mb-8">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                Dating Preferences
+              </h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div>
+                  <label
+                    htmlFor="pref_age_min"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                  >
+                    Min Age
+                  </label>
+                  <input
+                    id="pref_age_min"
+                    type="number"
+                    min={18}
+                    max={99}
+                    value={formData.preferences.age_range.min}
+                    onChange={(e) => updateAgeRange('min', e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="pref_age_max"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                  >
+                    Max Age
+                  </label>
+                  <input
+                    id="pref_age_max"
+                    type="number"
+                    min={18}
+                    max={99}
+                    value={formData.preferences.age_range.max}
+                    onChange={(e) => updateAgeRange('max', e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="pref_distance"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                  >
+                    Distance (km)
+                  </label>
+                  <input
+                    id="pref_distance"
+                    type="number"
+                    min={1}
+                    max={500}
+                    value={formData.preferences.distance}
+                    onChange={(e) => updateDistance(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Gender Preference
+                </label>
+                <div className="flex flex-wrap gap-3">
+                  {(['male', 'female', 'other'] as const).map((gender) => {
+                    const checked =
+                      formData.preferences.gender_preference.includes(gender);
+                    return (
+                      <label
+                        key={gender}
+                        className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 cursor-pointer"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          onChange={() => toggleGenderPreference(gender)}
+                          className="h-4 w-4"
+                        />
+                        <span className="text-sm text-gray-700 dark:text-gray-300 capitalize">
+                          {gender}
+                        </span>
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
 
             {error && (

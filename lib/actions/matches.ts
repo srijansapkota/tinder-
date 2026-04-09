@@ -1,6 +1,7 @@
 'use server';
 
 import { UserProfile } from '@/lib/types';
+import { calculateAge } from '@/lib/helpers/calculate-age';
 import { createClient } from '../supabase/server';
 
 export async function getPotentialMatches(): Promise<UserProfile[]> {
@@ -29,6 +30,12 @@ export async function getPotentialMatches(): Promise<UserProfile[]> {
   > | null;
   const genderPreference =
     (currentUserPrefs?.gender_preference as string[]) || [];
+  const ageRange =
+    (currentUserPrefs?.age_range as
+      | { min?: number; max?: number }
+      | undefined) || {};
+  const minAge = typeof ageRange.min === 'number' ? ageRange.min : 18;
+  const maxAge = typeof ageRange.max === 'number' ? ageRange.max : 99;
 
   // If no preference is set, show opposite gender by default
   let targetGenders = genderPreference;
@@ -67,24 +74,33 @@ export async function getPotentialMatches(): Promise<UserProfile[]> {
   }
 
   const filteredMatches =
-    potentialMatches.map((match) => ({
-      id: match.id,
-      full_name: match.full_name,
-      username: match.username,
-      email: '',
-      gender: match.gender,
-      birthdate: match.birthdate,
-      bio: match.bio,
-      avatar_url: match.avatar_url,
-      preferences: match.preferences,
-      location_lat: undefined,
-      location_lng: undefined,
-      last_active: new Date().toISOString(),
-      is_verified: true,
-      is_online: false,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    })) || [];
+    potentialMatches
+      .filter((match) => {
+        if (!match.birthdate) {
+          return false;
+        }
+
+        const age = calculateAge(match.birthdate);
+        return age >= minAge && age <= maxAge;
+      })
+      .map((match) => ({
+        id: match.id,
+        full_name: match.full_name,
+        username: match.username,
+        email: '',
+        gender: match.gender,
+        birthdate: match.birthdate,
+        bio: match.bio,
+        avatar_url: match.avatar_url,
+        preferences: match.preferences,
+        location_lat: undefined,
+        location_lng: undefined,
+        last_active: new Date().toISOString(),
+        is_verified: true,
+        is_online: false,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })) || [];
   return filteredMatches;
 }
 

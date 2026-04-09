@@ -34,8 +34,23 @@ function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+type FakeProfile = {
+  full_name: string;
+  username: string;
+  email: string;
+  gender: 'male' | 'female' | 'other';
+  birthdate: string;
+  bio: string;
+  avatar_url: string;
+  preferences: {
+    age_range: { min: number; max: number };
+    distance: number;
+    gender_preference: ('male' | 'female' | 'other')[];
+  };
+};
+
 // Fake profile data
-const fakeProfiles = [
+const baseFakeProfiles: FakeProfile[] = [
   {
     full_name: 'Sarah Johnson',
     username: 'sarah_j',
@@ -187,6 +202,87 @@ const fakeProfiles = [
   },
 ];
 
+const nepaliMaleProfiles = [
+  'Aarav Shrestha',
+  'Rohan Karki',
+  'Sujan Gurung',
+  'Bikash Poudel',
+  'Niraj Bhandari',
+  'Kiran Adhikari',
+  'Prabin Rai',
+  'Suman Thapa',
+  'Roshan Lama',
+  'Dipesh Basnet',
+];
+
+const nepaliFemaleProfiles = [
+  'Anisha Shrestha',
+  'Prakriti Karki',
+  'Sanjana Gurung',
+  'Mina Poudel',
+  'Ritu Bhandari',
+  'Kabita Adhikari',
+  'Nisha Rai',
+  'Smriti Thapa',
+  'Aakriti Lama',
+  'Sushmita Basnet',
+];
+
+function generateNepaliProfiles(): FakeProfile[] {
+  const maleProfiles: FakeProfile[] = nepaliMaleProfiles.map(
+    (fullName, index) => {
+      const firstName = fullName.split(' ')[0].toLowerCase();
+      const emailSuffix = 200 + index;
+      const birthYear = 1989 + (index % 8);
+
+      return {
+        full_name: fullName,
+        username: `${firstName}_np_m${index + 1}`,
+        email: `${firstName}.np${emailSuffix}@example.com`,
+        gender: 'male',
+        birthdate: `${birthYear}-0${(index % 9) + 1}-1${index % 9}`,
+        bio: 'Kathmandu-based and family-oriented. I enjoy mountain walks, momo nights, and meaningful conversations.',
+        avatar_url: '',
+        preferences: {
+          age_range: { min: 22 + (index % 4), max: 33 + (index % 5) },
+          distance: 20 + index * 2,
+          gender_preference: ['female'],
+        },
+      };
+    }
+  );
+
+  const femaleProfiles: FakeProfile[] = nepaliFemaleProfiles.map(
+    (fullName, index) => {
+      const firstName = fullName.split(' ')[0].toLowerCase();
+      const emailSuffix = 300 + index;
+      const birthYear = 1991 + (index % 8);
+
+      return {
+        full_name: fullName,
+        username: `${firstName}_np_f${index + 1}`,
+        email: `${firstName}.np${emailSuffix}@example.com`,
+        gender: 'female',
+        birthdate: `${birthYear}-1${(index % 2) + 1}-0${(index % 9) + 1}`,
+        bio: 'Creative and curious. I love Nepali food, short hikes, and building genuine connections.',
+        avatar_url: '',
+        preferences: {
+          age_range: { min: 24 + (index % 4), max: 36 + (index % 5) },
+          distance: 18 + index * 2,
+          gender_preference: ['male'],
+        },
+      };
+    }
+  );
+
+  return [...maleProfiles, ...femaleProfiles];
+}
+
+const fakeProfiles: FakeProfile[] = [
+  ...baseFakeProfiles,
+  ...generateNepaliProfiles(),
+];
+
 async function createFakeProfiles() {
   console.log('🚀 Starting to create fake profiles...');
 
@@ -201,7 +297,9 @@ async function createFakeProfiles() {
     const profile = fakeProfiles[i];
 
     try {
-      console.log(`\n📝 Creating profile ${i + 1}/10: ${profile.full_name}`);
+      console.log(
+        `\n📝 Creating profile ${i + 1}/${fakeProfiles.length}: ${profile.full_name}`
+      );
 
       // Prefer service-role (no emails, no RLS restrictions)
       if (adminClient) {
@@ -297,7 +395,8 @@ async function createFakeProfiles() {
       });
 
       if (signUpRes.error) {
-        if ((signUpRes.error as any).code === 'over_email_send_rate_limit') {
+        const authErrorCode = (signUpRes.error as { code?: string }).code;
+        if (authErrorCode === 'over_email_send_rate_limit') {
           console.error(
             '❌ Supabase email rate limit exceeded while signing up users. To seed reliably, either disable email confirmations in Supabase Auth settings (dev only) or set SUPABASE_SERVICE_ROLE_KEY in .env.local and rerun.'
           );
