@@ -16,7 +16,7 @@ projectbrief.md
 REFACTORING-SUMMARY.md
 CHANGES.md
 
-
+supabaseServer
 
 /.next/
 /out/
@@ -39,7 +39,7 @@ yarn-error.log*
 
 
 .vercel
-supabase
+
 
 
 *.tsbuildinfo
