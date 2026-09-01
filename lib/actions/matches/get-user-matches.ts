@@ -30,4 +30,5 @@ export async function getUserMatches(): Promise<UserProfile[]> {
       if (!otherUser) return null;
       return toUserProfile(otherUser, { email: otherUser.email, created_at: match.created_at });
     })
+    .filter((profile): profile is UserProfile => profile !== null);
 }
