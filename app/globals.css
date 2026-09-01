@@ -1,0 +1,106 @@
+@import "tailwindcss";
+
+:root {
+  --color-ink: #1b1812;
+  --color-ink-soft: #58524a;
+  --color-bone: #edebe2;
+  --color-bone-soft: #f5f4ee;
+  --color-lime: #d6f24c;
+  --color-lime-dark: #b9d62e;
+  --color-flame: #ff5a45;
+  --color-flame-dark: #e64730;
+  --color-berry: #a32357;
+
+  --background: var(--color-bone);
+  --foreground: var(--color-ink);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-ink: var(--color-ink);
+  --color-ink-soft: var(--color-ink-soft);
+  --color-bone: var(--color-bone);
+  --color-bone-soft: var(--color-bone-soft);
+  --color-lime: var(--color-lime);
+  --color-lime-dark: var(--color-lime-dark);
+  --color-flame: var(--color-flame);
+  --color-flame-dark: var(--color-flame-dark);
+  --color-berry: var(--color-berry);
+  --font-sans: var(--font-display);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-display), system-ui, sans-serif;
+}
+
+@layer components {
+  /* Flat paper background -- no gradient wash. Both classnames kept so every
+     page that already used them gets the new look without extra edits. */
+  .bg-app-gradient {
+    background-color: var(--color-bone);
+  }
+  .bg-app-gradient-alt {
+    background-color: var(--color-bone-soft);
+  }
+
+  .card-swipe {
+    @apply relative overflow-hidden rounded-lg bg-bone-soft border-2 border-ink;
+  }
+
+  /* Signature interaction: hard offset shadow that presses in on click,
+     instead of a soft blurred drop shadow. */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg border-2 border-ink bg-lime px-6 py-3 font-semibold text-ink transition-transform duration-150;
+    box-shadow: 4px 4px 0 var(--color-ink);
+  }
+  .btn-primary:hover {
+    background-color: var(--color-lime-dark);
+    transform: translate(-2px, -2px);
+    box-shadow: 6px 6px 0 var(--color-ink);
+  }
+  .btn-primary:active {
+    transform: translate(0, 0);
+    box-shadow: 2px 2px 0 var(--color-ink);
+  }
+  .btn-primary:disabled {
+    @apply opacity-50;
+    transform: none;
+    box-shadow: 4px 4px 0 var(--color-ink);
+  }
+
+  .btn-outline {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg border-2 border-ink bg-transparent px-6 py-3 font-semibold text-ink transition-colors duration-150;
+  }
+  .btn-outline:hover {
+    @apply bg-ink text-bone;
+  }
+
+  .chat-container {
+    @apply rounded-lg border-2 border-ink bg-bone-soft;
+  }
+
+  .chat-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-ink-soft) transparent;
+  }
+
+  .chat-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .chat-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .chat-scrollbar::-webkit-scrollbar-thumb {
+    background: var(--color-ink-soft);
+    border-radius: 3px;
+  }
+
+  .chat-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: var(--color-ink);
+  }
+}
